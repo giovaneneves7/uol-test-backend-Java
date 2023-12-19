@@ -1,0 +1,54 @@
+:root{
+    --primary: #00b7ff;
+    --light: #ffffff;
+}
+
+/* ======== [ SELECTORS ] ======== */
+*{
+    margin: 0;
+    padding: 0;
+}
+
+
+/* ======== [ HEADER ] ======== */
+#header{
+    max-width: 1300px;
+    margin: auto;
+}
+
+/* ======== [ MAIN ] ======== */
+#main{
+    max-width: 1300px;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#main #menu_container{
+    width: 50%;
+    display: flexbox;
+}
+
+#main #menu_container .menu_item{
+    width: 50%;
+    border: 2px solid var(--primary);
+    border-radius: 20px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    padding: 4px;
+}
+
+#main #menu_container .menu_item a{
+    text-decoration: none;
+    color: var(--primary);
+}
+
+#main #menu_container .menu_item:hover{
+    background-color: var(--primary);
+}
+
+#main #menu_container .menu_item:hover a{
+    color: var(--light);
+}

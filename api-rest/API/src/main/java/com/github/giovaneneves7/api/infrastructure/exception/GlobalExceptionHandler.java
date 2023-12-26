@@ -21,9 +21,6 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    /**
-     * Valor que determina se a 'stackTrace' deve ser mostrada no client.
-     */
     @Value(value = "${server.error.include-exception}")
     private boolean printStackTrace;
 
@@ -42,25 +39,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     }
 
-    /**
-     *
-     * Trata exceções genericas
-     *
-     * @param methodArgumentNotValidException - O argumento inválido.
-     * @param headers - Os cabeçalhos da requisição HTTP.
-     * @param status - O código de status da requisição HTTP.
-     * @param request - A requisição HTTP.
-     * @return uma entidade generica com a mensagem de erro.
-     */
-
-    /**
-     *
-     * Trata a exceção 'Exception'.
-     *
-     * @param exception - A instância de 'Exception'.
-     * @param request - A requisição HTTP.
-     * @return uma entidade generica com a mensagem de erro.
-     */
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<Object> handleAllUncaughtException(
@@ -78,17 +56,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 request);
     }
 
-
-    /**
-     *
-     * Trata a exceção 'BusinessException'.
-     *
-     * @param businessException - A instância de 'BusinessException'.
-     * @param request - A requisição HTTP.
-     * @return uma entidade generica com a mensagem de erro.
-     */
     @ExceptionHandler(InvalidGroupException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
     public ResponseEntity<Object> handleBusinessException(
             final InvalidGroupException businessException,
             final WebRequest request) {
@@ -100,19 +69,27 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return construirMensagemDeErro(
                 businessException,
                 mensagemErro,
-                HttpStatus.INTERNAL_SERVER_ERROR,
+                HttpStatus.NOT_FOUND,
                 request);
     }
 
-    /**
-     * Constroi uma mensagem de erro.
-     *
-     * @param exception  A exceção.
-     * @param message    A mensagem de exceção.
-     * @param httpStatus O status da requisição.
-     * @param request    A requisição.
-     * @return a mensagem de erro.
-     */
+    @ExceptionHandler(NoCodinomesAvailableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseEntity<Object> handleBusinessException(
+            final NoCodinomesAvailableException businessException,
+            final WebRequest request) {
+
+        final String mensagemErro = businessException.getMessage();
+
+        log.error(mensagemErro, businessException);
+
+        return construirMensagemDeErro(
+                businessException,
+                mensagemErro,
+                HttpStatus.BAD_REQUEST,
+                request);
+    }
+
     private ResponseEntity<Object> construirMensagemDeErro(
             final Exception exception,
             final String message,

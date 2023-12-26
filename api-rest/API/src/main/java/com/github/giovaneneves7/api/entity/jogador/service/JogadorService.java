@@ -7,17 +7,14 @@ import com.github.giovaneneves7.api.entity.jogador.repository.IJogadorRepository
 
 
 import com.github.giovaneneves7.api.infrastructure.exception.InvalidGroupException;
+import com.github.giovaneneves7.api.infrastructure.exception.NoCodinomesAvailableException;
 import com.github.giovaneneves7.api.infrastructure.util.ObjectMapperUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.SneakyThrows;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.internal.bytebuddy.description.method.MethodDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
@@ -33,7 +30,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,47 +52,55 @@ public class JogadorService implements IJogadorService {
     @Autowired
     private IJogadorRepository _jogadorRepository;
 
-    final ModelMapper MODEL_MAPPER = new ModelMapper();
-
+    @SneakyThrows
     @Override
-    public JogadorPostResponseDto salvarJogador(Jogador jogador) {
+    public JogadorPostResponseDto saveJogador(Jogador jogador) {
 
         String group = jogador.getGrupo();
-        List<String> codinomes = null;
+        List<String> codinomes = new ArrayList<>();
 
         if(group.equals("Liga da Justiça")){
 
-            StringBuffer response = fazerRequisicaoHttp("https://raw.githubusercontent.com/uolhost/test-backEnd-Java/master/referencias/liga_da_justica.xml");
-            codinomes = decodificarXml(response);
+            StringBuffer response = doHttpRequest("https://raw.githubusercontent.com/uolhost/test-backEnd-Java/master/referencias/liga_da_justica.xml");
+            codinomes = decodeXml(response);
 
         } else if(group.equals("Os Vingadores")){
 
-            StringBuffer response = fazerRequisicaoHttp("https://raw.githubusercontent.com/uolhost/test-backEnd-Java/master/referencias/vingadores.json");
-            codinomes = decodificarJson(response);
+            StringBuffer response = doHttpRequest("https://raw.githubusercontent.com/uolhost/test-backEnd-Java/master/referencias/vingadores.json");
+            codinomes = decodeJson(response);
+
+        } else{
+            throw new InvalidGroupException("Grupo inválido!");
         }
 
         List<String> inMemCodinomes = this._jogadorRepository.findAllCodinome(group);
-        List<String> avaliableCodinomes = new ArrayList<>();
+        List<String> availiableCodinomes = new ArrayList<>();
+
         for (String codinome : codinomes) {
 
             if (!inMemCodinomes.contains(codinome))
-                avaliableCodinomes.add(codinome);
+                availiableCodinomes.add(codinome);
 
         }
 
+        if(availiableCodinomes.isEmpty()){
+            throw new NoCodinomesAvailableException("Não há codinomes disponíveis!");
+        }
+
         Random rand = new Random();
-        int randomIndex = rand.nextInt(avaliableCodinomes.size());
+        int randomIndex = rand.nextInt(availiableCodinomes.size());
 
-        jogador.setCodinome(avaliableCodinomes.get(randomIndex));
+        jogador.setCodinome(availiableCodinomes.get(randomIndex));
 
-
-        // TODO: Disparar exceção.
-        return this._objectMapperUtil.map(this._jogadorRepository.save(jogador), new JogadorPostResponseDto());
+        return this._objectMapperUtil.map(
+                this._jogadorRepository.save(jogador),
+                new JogadorPostResponseDto()
+        );
 
     }
 
     @Override
-    public List<JogadorGetResponseDto> listarJogadores() {
+    public List<JogadorGetResponseDto> getAllJogadores() {
 
         return this._jogadorRepository.findAll()
                 .stream()
@@ -105,7 +109,7 @@ public class JogadorService implements IJogadorService {
 
     }
 
-    private StringBuffer fazerRequisicaoHttp(String path) {
+    private StringBuffer doHttpRequest(String path) {
 
         URL url = null;
 
@@ -136,7 +140,7 @@ public class JogadorService implements IJogadorService {
         }
     }
 
-    private List<String> decodificarXml(StringBuffer xmlResponse) {
+    private List<String> decodeXml(StringBuffer xmlResponse) {
 
         try {
 
@@ -166,7 +170,7 @@ public class JogadorService implements IJogadorService {
         }
 
     }
-        List<String> decodificarJson(StringBuffer jsonResponse){
+        List<String> decodeJson(StringBuffer jsonResponse){
 
             Gson gson = new Gson();
 

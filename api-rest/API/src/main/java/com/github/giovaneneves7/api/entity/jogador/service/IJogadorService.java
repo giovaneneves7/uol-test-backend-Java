@@ -12,7 +12,7 @@ import java.util.List;
  */
 public interface IJogadorService {
 
-    JogadorPostResponseDto salvarJogador(Jogador jogador);
-    List<JogadorGetResponseDto> listarJogadores();
+    JogadorPostResponseDto saveJogador(Jogador jogador);
+    List<JogadorGetResponseDto> getAllJogadores();
 
 }

@@ -27,5 +27,51 @@
         </tbody>
       </table>
 
+      <script>
+
+        fetch('http://localhost:8080/api/v1/json/jogadores')
+        .then(res => res.json())
+        .then(data => {
+
+          const tbody = document.querySelector('table tbody');
+
+        data.forEach(jogador => {
+
+          const row = document.createElement('tr');
+          
+          const nomeCell = document.createElement('td');
+          nomeCell.textContent = jogador.nome;
+          row.appendChild(nomeCell);
+          
+          const emailCell = document.createElement('td');
+          emailCell.textContent = jogador.email;
+          row.appendChild(emailCell);
+          
+          const telefoneCell = document.createElement('td');
+          telefoneCell.textContent = jogador.telefone;
+          row.appendChild(telefoneCell);
+          
+          const codinomeCell = document.createElement('td');
+          codinomeCell.textContent = jogador.codinome;
+          row.appendChild(codinomeCell);
+          
+          const grupoCell = document.createElement('td');
+          grupoCell.textContent = jogador.grupo;
+          row.appendChild(grupoCell);
+          
+    /*      const acao1Cell = document.createElement('td');
+          row.appendChild(acao1Cell);
+          
+          const acao2Cell = document.createElement('td');
+          row.appendChild(acao2Cell);*/
+          
+          tbody.appendChild(row);
+          });
+
+            })
+        .catch(e => {
+          console.log(e);
+        });
+      </script>
 </body>
 </html>
